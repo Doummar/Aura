@@ -153,7 +153,7 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your se
 
 Download Aura directly from AnkiWeb:
 
-👉 https://ankiweb.net/shared/info/928234906
+ https://ankiweb.net/shared/info/928234906
 
 ## Manual Installation
 
