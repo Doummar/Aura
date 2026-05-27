@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <style>
+    :root {
+      --hud-fg: #111111;
+      --hud-sep: rgba(0, 0, 0, 0.10);
+      --hud-progress-bg: rgba(0, 0, 0, 0.08);
+      --hud-time-paused-bg: rgba(0, 0, 0, 0.08);
+    }
+    body.dark {
+      --hud-fg: #ececec;
+      --hud-sep: rgba(255, 255, 255, 0.24);
+      --hud-progress-bg: rgba(255, 255, 255, 0.18);
+      --hud-time-paused-bg: rgba(255, 255, 255, 0.16);
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      overflow: hidden;
+      font-family: 'Segoe UI', -apple-system, sans-serif;
+      cursor: default;
+      user-select: none;
+    }
+    .container {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      color: var(--hud-fg);
+      font-size: 13px;
+      padding: 0 4px;
+      background: transparent;
+      height: 36px;
+    }
+    .time {
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+      color: inherit;
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 1px 3px;
+    }
+    .container.paused .time { background: var(--hud-time-paused-bg); }
+    .badge {
+      display: none;
+      font-size: 8px;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 5px;
+      border-radius: 8px;
+      line-height: 1;
+    }
+    .badge.paused {
+      color: #cc2a2a;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+    .badge.break {
+      color: #15803d;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+      text-transform: none;
+      font-size: 10px;
+      letter-spacing: 0.02em;
+    }
+    .section { display: flex; align-items: center; gap: 6px; }
+    .sep { width: 1px; height: 12px; background: var(--hud-sep); margin: 0 4px; opacity: 1; }
+    .pct { font-weight: 500; font-size: 13px; color: inherit; }
+    .progress-bar { width: 30px; height: 3px; background: var(--hud-progress-bg); border-radius: 1px; overflow: hidden; }
+    .progress-fill { height: 100%; background: currentColor; transition: width 0.3s ease; }
+    .rem-box { display: flex; align-items: baseline; gap: 2px; }
+    .rem { color: inherit; font-weight: 500; font-size: 13px; }
+    .label { font-size: 8px; opacity: 0.5; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: inherit; }
+  </style>
+</head>
+<body>
+  <div id='wrapper' class='container'>
+    <span id='time' class='time'>00:00</span>
+    <span id='paused-flag' class='badge paused'>Paused</span>
+    <span id='break-flag' class='badge break'>Break</span>
+    <div class='sep'></div>
+    <div class='section'>
+      <span id='pct' class='pct'>50%</span>
+      <div class='progress-bar'><div id='fill' class='progress-fill' style='width:50%'></div></div>
+    </div>
+    <div class='sep'></div>
+    <div class='section'>
+      <div class='rem-box'>
+        <span id='rem' class='rem'>0</span>
+        <span class='label'>LEFT</span>
+      </div>
+    </div>
+  </div>
+  <script>
+    function update(payloadOrSec, pct, rem, phase, total_sec, paused) {
+      const payload = typeof payloadOrSec === 'object' ? payloadOrSec : {
+        sec: payloadOrSec,
+        pct: pct,
+        rem: rem,
+        phase: phase,
+        total_sec: total_sec,
+        paused: paused,
+        is_dark: false
+      };
+
+      document.body.classList.toggle('dark', Boolean(payload.is_dark));
+
+      const sec = Number(payload.sec) || 0;
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      const score = Number(payload.pct) || 0;
+
+      document.getElementById('time').innerText = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+      document.getElementById('pct').innerText = score + '%';
+      document.getElementById('fill').style.width = score + '%';
+      document.getElementById('rem').innerText = Number(payload.rem) || 0;
+
+      const pausedFlag = document.getElementById('paused-flag');
+      const breakFlag = document.getElementById('break-flag');
+      const wrap = document.getElementById('wrapper');
+
+      if (payload.paused) {
+        wrap.classList.add('paused');
+        pausedFlag.style.display = 'inline-block';
+      } else {
+        wrap.classList.remove('paused');
+        pausedFlag.style.display = 'none';
+      }
+
+      if (payload.phase === 'BREAK') {
+        breakFlag.style.display = 'inline-block';
+        breakFlag.innerText = payload.break_kind === 'LONG' ? 'Long Break' : 'Break';
+      } else {
+        breakFlag.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
