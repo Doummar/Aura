@@ -96,11 +96,6 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your se
 
 <p align="center">
   <img src="https://i.postimg.cc/YC4v6FwD/Setttings-panel.png" width="100%">
-</p>
-
-<p align="center">
-<b>Simple settings panel for study timing and focus calibration</b>
-</p>
 
 
 <p align="center">
