@@ -40,7 +40,7 @@ class ReviewerHooks:
 
     def on_answer(self, reviewer, card, ease):
         try:
-            if hasattr(reviewer, '_timerStarted'):
+            if hasattr(reviewer, "_timerStarted"):
                 taken = time.time() - reviewer._timerStarted
             else:
                 taken = 2.0
@@ -56,20 +56,25 @@ class ReviewerHooks:
 
     def on_end(self):
         summary = self.manager.get_session_summary()
-        show_summary = bool(self.manager.config.get('show_session_summary', True))
+        show_summary = bool(self.manager.config.get("show_session_summary", True))
         review_finished = self._is_review_finished()
         self.manager.stop()
         self.overlay.hide()
         if show_summary and review_finished and summary:
+            summary["show_focus_stats"] = bool(self.manager.config.get("show_focus_score", True)) or bool(
+                self.manager.config.get("show_progress_bar", True)
+            )
+            summary["show_cards_stats"] = bool(self.manager.config.get("show_cards_left", True))
             dlg = SessionSummaryDialog(summary, mw)
             dlg.exec()
 
     def _is_review_finished(self):
+        """True only when reviewer ended because no cards are left."""
         try:
             if mw is None or mw.col is None:
                 return False
             sched = mw.col.sched
-            if sched is None or not hasattr(sched, 'counts'):
+            if sched is None or not hasattr(sched, "counts"):
                 return False
             counts = sched.counts()
             if not isinstance(counts, (tuple, list)) or len(counts) < 3:
