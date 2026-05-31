@@ -32,6 +32,7 @@ class HUDOverlay(QWidget):
 
         self.web_view = AnkiWebView()
         self.web_view.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # Let the overlay widget receive mouse events for drag/pause handling.
         self.web_view.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents, True)
         self.web_view.page().setBackgroundColor(Qt.GlobalColor.transparent)
         layout.addWidget(self.web_view)
@@ -77,7 +78,7 @@ class HUDOverlay(QWidget):
         if event.button() == Qt.MouseButton.LeftButton and self._press_global is not None:
             if self._press_was_time and not self._has_moved:
                 self.toggle_pause()
-            self.config.set('pos', [self.x(), self.y()])
+            self.config.set("pos", [self.x(), self.y()])
             self._press_global = None
             self._press_was_time = False
             self._has_moved = False
@@ -93,28 +94,30 @@ class HUDOverlay(QWidget):
 
     def apply_styles(self):
         self.setWindowOpacity(1.0)
-        pos = self.config.get('pos', [50, 50])
+        pos = self.config.get("pos", [50, 50])
         self.move(int(pos[0]), int(pos[1]))
 
-        if self.config.get('show_hud', True):
+        if self.config.get("show_hud", True):
             if self.manager.is_active:
                 self.show()
         else:
             self.hide()
 
     def load_page(self):
-        path = os.path.join(os.path.dirname(__file__), 'web', 'index.html')
-        with open(path, encoding='utf-8') as handle:
+        path = os.path.join(os.path.dirname(__file__), "web", "index.html")
+        with open(path, encoding="utf-8") as handle:
             html = handle.read()
         self.web_view.setHtml(html, QUrl.fromLocalFile(path))
 
     def _handle_transition_prompt(self, prompt_type):
         from aqt.utils import askUser
 
-        if prompt_type == 'ASK_BREAK':
+        if prompt_type == "ASK_BREAK":
             details = self.manager.get_pending_break_details() or {}
-            kind = str(details.get('kind', 'SHORT')).upper()
-            mins = max(1, int(math.ceil(float(details.get('duration_sec', 60)) / 60.0)))
+            details["show_focus_stats"] = self._show_focus_stats()
+            details["show_cards_stats"] = bool(self.config.get("show_cards_left", True))
+            kind = str(details.get("kind", "SHORT")).upper()
+            mins = max(1, int(math.ceil(float(details.get("duration_sec", 60)) / 60.0)))
             dialog = BreakPromptDialog(kind=kind, minutes=mins, details=details, parent=mw)
             if dialog.exec():
                 self.manager.respond_to_break_offer(True)
@@ -122,8 +125,11 @@ class HUDOverlay(QWidget):
                 self.manager.respond_to_break_offer(False)
             return
 
-        if prompt_type == 'ASK_STUDY':
-            return_now = askUser('Break finished. Return to study now?', title='Aura: Study Time')
+        if prompt_type == "ASK_STUDY":
+            return_now = askUser(
+                "Break finished. Return to study now?",
+                title="Aura: Study Time",
+            )
             self.manager.respond_to_study_offer(return_now)
 
     def refresh(self):
@@ -131,10 +137,18 @@ class HUDOverlay(QWidget):
             if not self.manager.is_active or not self.isVisible():
                 return
 
-            score = self.manager.calculate_cognitive_score()
-            self.manager.record_score_sample(score)
+            show_focus_score = bool(self.config.get("show_focus_score", True))
+            show_cards_left = bool(self.config.get("show_cards_left", True))
+            show_progress_bar = bool(self.config.get("show_progress_bar", True))
+            if show_focus_score or show_progress_bar:
+                score = self.manager.calculate_cognitive_score()
+                self.manager.record_score_sample(score)
+            else:
+                score = int(round(self.manager.smoothed_score))
             rem = ProgressEngine.get_remaining()
-            phase, phase_rem, total_sec, _triggered, is_paused, break_kind, prompt_type = self.manager.get_phase_info()
+            phase, phase_rem, total_sec, _triggered, is_paused, break_kind, prompt_type = (
+                self.manager.get_phase_info()
+            )
 
             if prompt_type and not is_paused and not self._prompt_active:
                 self._prompt_active = True
@@ -142,23 +156,28 @@ class HUDOverlay(QWidget):
                     self._handle_transition_prompt(prompt_type)
                 finally:
                     self._prompt_active = False
-                phase, phase_rem, total_sec, _triggered, is_paused, break_kind, prompt_type = self.manager.get_phase_info()
+                phase, phase_rem, total_sec, _triggered, is_paused, break_kind, prompt_type = (
+                    self.manager.get_phase_info()
+                )
 
             payload = json.dumps(
                 {
-                    'sec': phase_rem,
-                    'pct': score,
-                    'rem': rem,
-                    'phase': phase,
-                    'break_kind': break_kind,
-                    'total_sec': total_sec,
-                    'paused': is_paused,
-                    'is_dark': self._is_dark_theme(),
+                    "sec": phase_rem,
+                    "pct": score,
+                    "rem": rem,
+                    "phase": phase,
+                    "break_kind": break_kind,
+                    "total_sec": total_sec,
+                    "paused": is_paused,
+                    "is_dark": self._is_dark_theme(),
+                    "show_focus_score": show_focus_score,
+                    "show_cards_left": show_cards_left,
+                    "show_progress_bar": show_progress_bar,
                 }
             )
-            self.web_view.eval(f'update({payload})')
+            self.web_view.eval(f"update({payload})")
         except Exception as exc:
-            print(f'HUD Refresh Error: {exc}')
+            print(f"HUD Refresh Error: {exc}")
 
     def _is_dark_theme(self):
         try:
@@ -166,3 +185,8 @@ class HUDOverlay(QWidget):
             return palette.window().color().lightness() < 128
         except Exception:
             return False
+
+    def _show_focus_stats(self):
+        return bool(self.config.get("show_focus_score", True)) or bool(
+            self.config.get("show_progress_bar", True)
+        )
