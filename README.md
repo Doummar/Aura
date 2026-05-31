@@ -2,7 +2,7 @@
 
 Aura adds a minimal live focus HUD to your Anki review sessions, helping you stay aware of your pacing, focus rhythm, and study consistency without cluttering your workspace.
 
-Built around a calm and distraction-free philosophy, Aura quietly tracks your session while giving lightweight feedback through live timers, break states, and focus indicators.
+Built around a calm and distraction-free philosophy, Aura quietly tracks your study sessions while providing lightweight feedback through timers, focus indicators, break management, and session statistics.
 
 ---
 
@@ -13,14 +13,26 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your se
 </p>
 
 <p align="center">
-<b>Live study HUD with automatic focus tracking</b>
+<b>Live focus tracking during Anki review sessions</b>
+</p>
+
+---
+
+# Overview
+
+<p align="center">
+  <img src="https://i.postimg.cc/RFjW6WR4/1.png" width="100%">
+</p>
+
+<p align="center">
+<b>Complete workflow featuring focus tracking, pause support, break management, and session statistics</b>
 </p>
 
 ---
 
 # Screenshots
 
-## Minimal Toolbar
+## Study Toolbar
 
 <p align="center">
   <img src="https://i.postimg.cc/Bn1vLGTG/Tool-Bar.png" width="100%">
@@ -32,62 +44,62 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your se
 
 ---
 
-## Pause System
+## Pause Session
 
 <p align="center">
   <img src="https://i.postimg.cc/KvjjbT4D/Tool-Bar-Paused.png" width="100%">
 </p>
 
 <p align="center">
-<b>Pause sessions instantly while preserving timer and score state</b>
+<b>Pause and resume your study session without losing progress</b>
 </p>
 
 ---
 
-## Break Mode
+## Break Toolbar
 
 <p align="center">
   <img src="https://i.postimg.cc/8cKCWpXF/Toolbar-Break.png" width="100%">
 </p>
 
 <p align="center">
-<b>Automatic transition into scheduled break sessions</b>
+<b>Automatic transition into break mode when a study cycle is completed</b>
 </p>
 
 ---
 
-## Break Screen
+## Short Break
 
 <p align="center">
   <img src="https://i.postimg.cc/pL7n4ZZK/Break-Time.png" width="100%">
 </p>
 
 <p align="center">
-<b>Dedicated break screen with live countdown timer</b>
+<b>Dedicated break screen with a live countdown timer</b>
 </p>
 
 ---
 
-## Long Break Support
+## Long Break
 
 <p align="center">
   <img src="https://i.postimg.cc/3NnkBCNR/Long-Break.png" width="100%">
 </p>
 
 <p align="center">
-<b>Support for long recovery breaks during extended study sessions</b>
+<b>Long recovery breaks for extended study sessions</b>
 </p>
 
 ---
 
-## Break Finished Notification
+## Break Finished
 
 <p align="center">
   <img src="https://i.postimg.cc/4Nft9nyG/Break-finished.png" width="100%">
 </p>
 
 <p align="center">
-<b>Clear notifications when breaks are finished and study is ready to resume</b>
+<b>Clear notification when it is time to return to studying</b>
 </p>
 
 ---
@@ -96,16 +108,11 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your se
 
 <p align="center">
   <img src="https://i.postimg.cc/YC4v6FwD/Setttings-panel.png" width="100%">
-
-
-<p align="center">
-  <img src="[https://i.postimg.cc/YC4v6FwD/Setttings-panel.png](https://i.postimg.cc/RFjW6WR4/1.png)" width="100%">
 </p>
 
 <p align="center">
-<b>Simple settings panel for study timing and focus calibration</b>
+<b>Customize study duration, break lengths, and focus scoring</b>
 </p>
-
 
 ---
 
@@ -116,7 +123,7 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your se
 </p>
 
 <p align="center">
-<b>Session completion screen with clean study statistics overview</b>
+<b>Clean end-of-session statistics and study overview</b>
 </p>
 
 ---
@@ -124,64 +131,70 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your se
 # Features
 
 - Minimal floating HUD during Anki reviews
-- Live study session timer
+- Live study timer
 - Focus score based on answer rhythm and consistency
-- Cards remaining counter
-- Automatic study / break cycle management
-- Support for both short and long breaks
+- Remaining cards counter
+- Automatic study and break cycles
+- Support for short and long breaks
 - Break completion notifications
-- Quick pause and resume directly from the toolbar
-- Session resumes from the exact same state after pause
-- Adjustable score sensitivity
+- One-click pause and resume
+- Session state preserved while paused
+- Adjustable focus score sensitivity
 - Calibration system for more stable scoring
-- Custom study, short break, and long break durations
-- Minimal toolbar designed for low distraction
-- Automatic dark / light mode support
+- Custom study duration
+- Custom short break duration
+- Custom long break duration
+- Lightweight and distraction-free design
+- Automatic dark and light mode support
 
 ---
 
-# How To Use
+# How It Works
 
-1. Start reviewing cards normally in Anki
-2. Aura automatically activates during review sessions
-3. Monitor your live timer, score, and remaining cards
-4. Click the timer text to pause the session
-5. Click again to instantly resume
-6. Take automatic short and long breaks when prompted
-7. Open **Tools → Aura Settings** to customise behaviour
+1. Start reviewing cards normally in Anki.
+2. Aura automatically activates when a review session begins.
+3. Monitor your study timer, focus score, and remaining cards.
+4. Pause the session at any time with a single click.
+5. Complete study cycles and take scheduled breaks.
+6. Return when the break timer finishes.
+7. Review your session statistics when you are done.
 
 ---
 
 # Installation
 
-## From AnkiWeb
+## AnkiWeb
 
 Download Aura directly from AnkiWeb:
 
- https://ankiweb.net/shared/info/928234906
+https://ankiweb.net/shared/info/928234906
 
 ## Manual Installation
 
-1. Download the `.ankiaddon` release
-2. Open Anki
-3. Go to **Tools → Add-ons**
-4. Click **Install from file**
-5. Select the Aura `.ankiaddon` file
+1. Download the latest `.ankiaddon` release.
+2. Open Anki.
+3. Navigate to **Tools → Add-ons**.
+4. Click **Install from File**.
+5. Select the downloaded Aura file.
+6. Restart Anki.
 
 ---
 
 # Support
 
-- Bug reports and feature requests:
-  https://github.com/Doummar/Aura/issues
+Bug reports, feature requests, and suggestions:
+
+https://github.com/Doummar/Aura/issues
 
 ---
 
-# Philosophy
+# Why Aura?
 
-Aura is designed to support calm, focused, and sustainable studying while keeping the Anki experience clean and lightweight.
+Many productivity tools focus on giving you more information.
 
-Instead of overwhelming dashboards or aggressive productivity systems, Aura focuses on gentle awareness and consistency.
+Aura focuses on giving you only the information you need.
+
+The goal is not to pressure you into studying harder, but to help you maintain awareness of your study rhythm, take breaks at the right time, and build consistent study habits over the long term.
 
 ---
 
@@ -191,4 +204,4 @@ MIT License
 
 ---
 
-**Stay focused, stay consistent, and study on! — Adel**
+### Stay focused. Stay consistent. Study on. - Adel
