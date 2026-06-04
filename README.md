@@ -107,7 +107,7 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your st
 ## Settings Panel
 
 <p align="center">
-  <img src="https://i.postimg.cc/YC4v6FwD/Setttings-panel.png" width="100%">
+  <img src="https://i.postimg.cc/SsXnGYrV/sadfesf.png" width="100%">
 </p>
 
 <p align="center">
