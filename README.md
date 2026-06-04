@@ -21,7 +21,7 @@ Built around a calm and distraction-free philosophy, Aura quietly tracks your st
 # Overview
 
 <p align="center">
-  <img src="[https://i.postimg.cc/RFjW6WR4/1.png](https://i.postimg.cc/XJ6RsTKz/qqqqqqqqqqqqqq.png)" width="100%">
+  <img src="https://i.postimg.cc/XJ6RsTKz/qqqqqqqqqqqqqq.png" width="100%">
 </p>
 
 <p align="center">
