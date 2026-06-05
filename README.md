@@ -1,4 +1,4 @@
-# Aura — Minimal Focus HUD for Anki
+# Aura — Minimalistic Pomodoro Timer for Anki
 
 Aura adds a minimal live focus HUD to your Anki review sessions, helping you stay aware of your pacing, focus rhythm, and study consistency without cluttering your workspace.
 
