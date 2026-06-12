@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        :root {
+            --hud-fg: #111111;
+            --hud-sep: rgba(0, 0, 0, 0.10);
+            --hud-progress-bg: rgba(0, 0, 0, 0.08);
+            --hud-time-paused-bg: rgba(0, 0, 0, 0.08);
+        }
+        body.dark {
+            --hud-fg: #ececec;
+            --hud-sep: rgba(255, 255, 255, 0.24);
+            --hud-progress-bg: rgba(255, 255, 255, 0.18);
+            --hud-time-paused-bg: rgba(255, 255, 255, 0.16);
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            overflow: hidden;
+            font-family: "Segoe UI", -apple-system, sans-serif;
+            cursor: default;
+            user-select: none;
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            color: var(--hud-fg) !important;
+            font-size: 13px;
+            padding: 0 4px;
+            background: transparent !important;
+            height: 36px;
+            transition: color 0.35s ease;
+        }
+
+        .time {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.01em;
+            color: inherit;
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 1px 3px;
+        }
+        .container.paused .time { background: var(--hud-time-paused-bg); }
+        .badge {
+            display: none;
+            font-size: 8px;
+            letter-spacing: 0.04em;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 5px;
+            border-radius: 8px;
+            line-height: 1;
+        }
+        .badge.paused {
+            color: #cc2a2a;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+        .section { display: flex; align-items: center; gap: 6px; }
+        .sep { width: 1px; height: 12px; background: var(--hud-sep) !important; margin: 0 4px; opacity: 1; }
+        .pct { font-weight: 500; font-size: 13px; color: inherit; }
+
+        /* ── fill bar (original style) ── */
+        .progress-bar { width: 30px; height: 3px; background: var(--hud-progress-bg); border-radius: 1px; overflow: hidden; }
+        .progress-fill { height: 100%; background: currentColor; transition: width 0.3s ease; }
+
+        /* ── dot style (default) ── */
+        .rhythm-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: background-color 0.4s ease;
+        }
+
+        .rem-box { display: flex; align-items: baseline; gap: 2px; }
+        .rem { color: inherit; font-weight: 500; font-size: 13px; }
+        .label { font-size: 8px; opacity: 0.5; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: inherit; }
+        .badge.break {
+            color: #15803d;
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            text-transform: none;
+            font-size: 10px;
+            letter-spacing: 0.02em;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper" class="container">
+        <span id="time" class="time">00:00</span>
+        <span id="paused-flag" class="badge paused">Paused</span>
+        <span id="break-flag" class="badge break">Break</span>
+        <div id="sep-focus" class="sep"></div>
+        <div id="focus-section" class="section">
+            <span id="pct" class="pct">50%</span>
+            <!-- fill bar (shown when bar_style == "bar", default) -->
+            <div id="progress-bar" class="progress-bar">
+                <div id="fill" class="progress-fill" style="width:50%"></div>
+            </div>
+            <!-- dot indicator (shown when bar_style == "dot") -->
+            <div id="rhythm-dot" class="rhythm-dot" style="display:none; background-color:#22c55e"></div>
+        </div>
+        <div id="sep-cards" class="sep"></div>
+        <div id="cards-section" class="section">
+            <div class="rem-box">
+                <span id="rem" class="rem">0</span>
+                <span class="label">LEFT</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        /**
+         * Three-zone colour model with a user-configurable warning threshold.
+         *
+         * DANGER ZONE  (< threshold)       — flat red.
+         * TRANSITION   (threshold → +9 %)  — piecewise hue through 5 anchors.
+         * FLOW ZONE    (≥ threshold + 9 %) — deepening green.
+         *
+         * Anchor offsets from threshold (fixed, regardless of threshold value):
+         *   +0 pp  → hue   0  (Red)
+         *   +2.5   → hue  30  (Orange)
+         *   +4     → hue  60  (Amber)
+         *   +8     → hue  90  (Yellow-green)
+         *   +9     → hue 120  (Green / baseline)
+         */
+        function getScoreColor(score, isDark, threshold) {
+            const s        = Math.max(0, Math.min(100, score));
+            const th       = (typeof threshold === "number" && isFinite(threshold))
+                             ? threshold : 40;
+            const flowStart = th + 9;
+            const S0 = isDark ? 75 : 78;
+            const L0 = isDark ? 58 : 38;
+
+            if (s >= flowStart) {
+                // Flow zone: green deepens as score climbs above baseline
+                const range = Math.max(1, 100 - flowStart);
+                const t     = Math.min(1, (s - flowStart) / range);
+                return `hsl(120, ${Math.round(S0 + t * 13)}%, ${Math.round(L0 - t * 7)}%)`;
+            }
+
+            if (s >= th) {
+                // Transition band: piecewise-linear hue between anchor points
+                const stops = [
+                    [th,       0],
+                    [th + 2.5, 30],
+                    [th + 4,   60],
+                    [th + 8,   90],
+                    [flowStart, 120],
+                ];
+                let hue = 0;
+                for (let i = 0; i < stops.length - 1; i++) {
+                    const [s0, h0] = stops[i];
+                    const [s1, h1] = stops[i + 1];
+                    if (s >= s0 && s <= s1) {
+                        hue = Math.round(h0 + ((s - s0) / (s1 - s0)) * (h1 - h0));
+                        break;
+                    }
+                }
+                return `hsl(${hue}, ${S0}%, ${L0}%)`;
+            }
+
+            // Danger zone: flat red
+            return `hsl(0, ${S0}%, ${L0}%)`;
+        }
+
+        function update(payloadOrSec, pct, rem, phase, total_sec, paused) {
+            const payload = typeof payloadOrSec === "object"
+                ? payloadOrSec
+                : {
+                    sec: payloadOrSec,
+                    pct: pct,
+                    rem: rem,
+                    phase: phase,
+                    total_sec: total_sec,
+                    paused: paused,
+                    is_dark: false,
+                    show_focus_score: true,
+                    show_cards_left: true,
+                    show_progress_bar: true,
+                    bar_style: "bar"
+                };
+
+            const isDark = Boolean(payload.is_dark);
+            document.body.classList.toggle("dark", isDark);
+
+            const showFocus    = payload.show_focus_score !== false;
+            const showCards    = payload.show_cards_left  !== false;
+            const showProgress = payload.show_progress_bar !== false;
+            const showFocusSection = showFocus || showProgress;
+            // BUG FIX: Math.floor so float remainder never renders as "4.999…"
+            const sec = Math.floor(Number(payload.sec) || 0);
+            const m   = Math.floor(sec / 60);
+            const s   = sec % 60;
+            const score    = Number(payload.pct) || 0;
+            const barStyle = (payload.bar_style || "bar").toLowerCase();
+
+            // ── shared gradient colour for this tick ─────────────────────
+            const threshold = Number(payload.warning_threshold ?? 40);
+            const scoreColor = getScoreColor(score, isDark, threshold);
+
+            document.getElementById("time").innerText =
+                (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+
+            // Percentage text — stays neutral; gradient lives on the indicator only
+            const pctEl = document.getElementById("pct");
+            pctEl.innerText = score + "%";
+
+            document.getElementById("rem").innerText = Math.floor(Number(payload.rem) || 0);
+
+            /* ── rhythm bar / dot visibility & colour ── */
+            const barEl = document.getElementById("progress-bar");
+            const dotEl = document.getElementById("rhythm-dot");
+
+            if (showProgress) {
+                if (barStyle === "bar") {
+                    barEl.style.display = "block";
+                    dotEl.style.display = "none";
+                    document.getElementById("fill").style.width = score + "%";
+                } else {
+                    barEl.style.display = "none";
+                    dotEl.style.display = "block";
+                    dotEl.style.backgroundColor = scoreColor;
+                }
+            } else {
+                barEl.style.display = "none";
+                dotEl.style.display = "none";
+            }
+
+            document.getElementById("focus-section").style.display = showFocusSection ? "flex" : "none";
+            pctEl.style.display                                     = showFocus    ? "inline" : "none";
+            document.getElementById("cards-section").style.display = showCards    ? "flex"   : "none";
+            document.getElementById("sep-focus").style.display     = (showFocusSection || showCards) ? "block" : "none";
+            document.getElementById("sep-cards").style.display     = (showFocusSection && showCards) ? "block" : "none";
+
+            const pausedFlag = document.getElementById("paused-flag");
+            const breakFlag  = document.getElementById("break-flag");
+            const wrap       = document.getElementById("wrapper");
+
+            if (payload.phase === "BREAK") {
+                wrap.classList.add("break");
+            } else {
+                wrap.classList.remove("break");
+            }
+
+            if (payload.paused) {
+                wrap.classList.add("paused");
+                pausedFlag.style.display = "inline-block";
+            } else {
+                wrap.classList.remove("paused");
+                pausedFlag.style.display = "none";
+            }
+
+            if (payload.phase === "BREAK") {
+                breakFlag.style.display = "inline-block";
+                breakFlag.innerText = payload.break_kind === "LONG" ? "Long Break" : "Break";
+            } else {
+                breakFlag.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
